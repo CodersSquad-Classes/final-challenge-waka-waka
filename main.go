@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 	"os"
+
+	"github.com/danicat/simpleansi"
 )
 
 var maze []string
@@ -29,6 +31,10 @@ func printScreen() {
 	for _, line := range maze {
 		fmt.Println(line)
 	}
+}
+
+func clearScreen() {
+	simpleansi.ClearScreen()
 }
 
 func main() {
