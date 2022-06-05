@@ -28,13 +28,10 @@ func loadMaze(file string) error {
 }
 
 func printScreen() {
+	simpleansi.ClearScreen()
 	for _, line := range maze {
 		fmt.Println(line)
 	}
-}
-
-func clearScreen() {
-	simpleansi.ClearScreen()
 }
 
 func main() {
