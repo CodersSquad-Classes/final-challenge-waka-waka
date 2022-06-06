@@ -7,6 +7,7 @@ import (
 	"math/rand"
 	"os"
 	"os/exec"
+	"time"
 
 	"github.com/danicat/simpleansi"
 )
@@ -199,35 +200,49 @@ func main() {
 	defer cleanup()
 
 	// load resources
-	err := loadMaze("maze01.txt")
+	err := loadMaze("maze02.txt")
 	if err != nil {
 		log.Println("failed to load maze:", err)
 		return
 	}
+
+	// process input (async)
+	input := make(chan string)
+	go func(ch chan<- string) {
+		for {
+			input, err := readInput()
+			if err != nil {
+				log.Println("error reading input:", err)
+				ch <- "ESC"
+			}
+			ch <- input
+		}
+	}(input)
 
 	// game loop
 	for {
 		// update screen
 		printScreen()
 
-		// process input
-		input, err := readInput()
-		if err != nil {
-			log.Println("error reading input:", err)
-			break
-		}
-
 		// process movement
-		movePlayer(input)
+		select {
+		case inp := <-input:
+			if inp == "ESC" {
+				lives = 0
+			}
+			movePlayer(inp)
+		default:
+		}
 		moveGhost()
 
 		// process collisions
 
 		// check game over
-		if input == "ESC" || numDots == 0 || lives <= 0 {
+		if numDots == 0 || lives <= 0 {
 			break
 		}
 
 		// repeat
+		time.Sleep(200 * time.Millisecond)
 	}
 }
