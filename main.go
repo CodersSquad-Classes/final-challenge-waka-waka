@@ -1,248 +1,59 @@
 package main
 
 import (
-	"bufio"
-	"fmt"
+	"flag"
 	"log"
-	"math/rand"
 	"os"
-	"os/exec"
+	"strconv"
+	"sync"
 	"time"
 
-	"github.com/danicat/simpleansi"
+	pacman "PacmanGo/pacman"
 )
 
-type sprite struct {
-	row int
-	col int
-}
-
-var player sprite
-var maze []string
-var ghosts []*sprite
-
-var score int
-var numDots int
-var lives = 1
-
-func loadMaze(file string) error {
-	f, err := os.Open(file)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-
-	scanner := bufio.NewScanner(f)
-	for scanner.Scan() {
-		line := scanner.Text()
-		maze = append(maze, line)
-	}
-
-	// traverse each character of the maze and create a new player when it locates a `P`
-	for row, line := range maze {
-		for col, char := range line {
-			switch char {
-			case 'P':
-				player = sprite{row, col}
-			case 'G':
-				ghosts = append(ghosts, &sprite{row, col})
-			case '.':
-				numDots++
-			}
-		}
-	}
-
-	return nil
-}
-
-func printScreen() {
-	simpleansi.ClearScreen()
-	for _, line := range maze {
-		for _, chr := range line {
-			switch chr {
-			case '#':
-				fallthrough
-			case '.':
-				fmt.Printf("%c", chr)
-			default:
-				fmt.Print(" ")
-			}
-		}
-		fmt.Println()
-	}
-
-	simpleansi.MoveCursor(player.row, player.col)
-	fmt.Print("P")
-	for _, g := range ghosts {
-		simpleansi.MoveCursor(g.row, g.col)
-		fmt.Print("G")
-	}
-
-	// Move cursor outside of maze drawing area
-	simpleansi.MoveCursor(len(maze)+1, 0)
-	fmt.Println("Score:", score, "\tLives:", lives)
-}
-
-func readInput() (string, error) {
-	buffer := make([]byte, 100)
-
-	cnt, err := os.Stdin.Read(buffer)
-	if err != nil {
-		return "", err
-	}
-
-	if cnt == 1 && buffer[0] == 0x1b {
-		return "ESC", nil
-	} else if cnt >= 3 {
-		if buffer[0] == 0x1b && buffer[1] == '[' {
-			switch buffer[2] {
-			case 'A':
-				return "UP", nil
-			case 'B':
-				return "DOWN", nil
-			case 'C':
-				return "RIGHT", nil
-			case 'D':
-				return "LEFT", nil
-			}
-		}
-	}
-
-	return "", nil
-}
-
-func makeMove(oldRow, oldCol int, dir string) (newRow, newCol int) {
-	newRow, newCol = oldRow, oldCol
-
-	switch dir {
-	case "UP":
-		newRow = newRow - 1
-		if newRow < 0 {
-			newRow = len(maze) - 1
-		}
-	case "DOWN":
-		newRow = newRow + 1
-		if newRow == len(maze) {
-			newRow = 0
-		}
-	case "RIGHT":
-		newCol = newCol + 1
-		if newCol == len(maze[0]) {
-			newCol = 0
-		}
-	case "LEFT":
-		newCol = newCol - 1
-		if newCol < 0 {
-			newCol = len(maze[0]) - 1
-		}
-	}
-
-	if maze[newRow][newCol] == '#' {
-		newRow = oldRow
-		newCol = oldCol
-	}
-
-	return
-}
-
-func movePlayer(dir string) {
-	player.row, player.col = makeMove(player.row, player.col, dir)
-	switch maze[player.row][player.col] {
-	case '.':
-		numDots--
-		score++
-		//remove dot
-		maze[player.row] = maze[player.row][0:player.col] + " " + maze[player.row][player.col+1:]
-	}
-}
-
-func drawDirection() string {
-	dir := rand.Intn(4)
-	move := map[int]string{
-		0: "UP",
-		1: "DOWN",
-		2: "LEFT",
-		3: "RIGHT",
-	}
-	return move[dir]
-}
-
-func moveGhost() {
-	for _, g := range ghosts {
-		dir := drawDirection()
-		g.row, g.col = makeMove(g.row, g.col, dir)
-	}
-}
-
-func initialise() {
-	cbTerm := exec.Command("stty", "cbreak", "-echo")
-	cbTerm.Stdin = os.Stdin
-
-	err := cbTerm.Run()
-	if err != nil {
-		log.Fatalln("unable to activate cbreak mode:", err)
-	}
-}
-
-func cleanup() {
-	cookedTerm := exec.Command("stty", "-cbreak", "echo")
-	cookedTerm.Stdin = os.Stdin
-
-	err := cookedTerm.Run()
-	if err != nil {
-		log.Fatalln("unable to activate cooked mode:", err)
-	}
-}
-
 func main() {
-	// initialize game
-	initialise()
-	defer cleanup()
+	var (
+		configFile = flag.String("config-file", "config.json", "path to custom configuration file")
+		mazeFile   = flag.String("maze-file", "maze01.txt", "path to a custom maze file")
+	)
 
-	// load resources
-	err := loadMaze("maze02.txt")
-	if err != nil {
-		log.Println("failed to load maze:", err)
+	var ghostsStatusMx sync.RWMutex // guards ghosts and ghostStatus
+	var pillMx sync.Mutex           // guards pillTimer
+
+	var cfg pacman.Config      // global configuration
+	var player pacman.Sprite   // global player
+	var ghosts []*pacman.Ghost // global ghosts
+	var maze []string          // global maze
+	var score int              // global score
+	var numDots int            // global number of dots
+	var lives = 3              // global number of lives
+
+	var pillTimer *time.Timer
+
+	flag.Parse() // parse the command line arguments
+
+	var ghostNum int
+	if len(os.Args) != 2 {
+		log.Println("No number of enemies provided or too many arguments. Correct usage: go run main.go [number of enemies]")
 		return
 	}
 
-	// process input (async)
-	input := make(chan string)
-	go func(ch chan<- string) {
-		for {
-			input, err := readInput()
-			if err != nil {
-				log.Println("error reading input:", err)
-				ch <- "ESC"
-			}
-			ch <- input
-		}
-	}(input)
+	ghostNum, _ = strconv.Atoi(os.Args[1])
 
-	// game loop
-	for {
-		// update screen
-		printScreen()
-
-		// process movement
-		select {
-		case inp := <-input:
-			if inp == "ESC" {
-				lives = 0
-			}
-			movePlayer(inp)
-		default:
-		}
-		moveGhost()
-
-		// process collisions
-
-		// check game over
-		if numDots == 0 || lives <= 0 {
-			break
-		}
-
-		// repeat
-		time.Sleep(200 * time.Millisecond)
+	if ghostNum < 1 || ghostNum > 12 {
+		log.Println("Invalid number of enemies. It must be between 1 and 12")
+		return
 	}
+
+	pacman.Initialise()
+	defer pacman.Cleanup()
+
+	err := pacman.LoadResources(*mazeFile, *configFile, &maze, &ghosts, &player, &numDots, &cfg, ghostNum)
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+
+	// run the game
+	pacman.Run(&player, &maze, &numDots, &score, &lives, &pillMx, &ghostsStatusMx, &ghosts, pillTimer, &cfg)
 }
