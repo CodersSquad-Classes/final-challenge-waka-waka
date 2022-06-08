@@ -2,8 +2,6 @@ package src
 
 import (
 	"math/rand"
-	"sync"
-	"time"
 )
 
 func MakeMove(oldRow, oldCol int, dir string, maze *[]string) (newRow, newCol int) {
@@ -38,25 +36,6 @@ func MakeMove(oldRow, oldCol int, dir string, maze *[]string) (newRow, newCol in
 	}
 
 	return
-}
-
-func MovePlayer(dir string, player *Sprite, maze *[]string, numDots, score *int, pillMx *sync.Mutex, ghostsStatusMx *sync.RWMutex, ghosts *[]*Ghost, pillTimer *time.Timer, cfg *Config) {
-	player.Row, player.Col = MakeMove(player.Row, player.Col, dir, maze)
-
-	removeDot := func(row, col int) {
-		(*maze)[row] = (*maze)[row][0:col] + " " + (*maze)[row][col+1:]
-	}
-
-	switch (*maze)[player.Row][player.Col] {
-	case '.':
-		*numDots--
-		*score++
-		removeDot(player.Row, player.Col)
-	case 'X':
-		*score += 10
-		removeDot(player.Row, player.Col)
-		go ProcessPill(pillMx, ghostsStatusMx, ghosts, pillTimer, cfg)
-	}
 }
 
 func DrawDirection() string {

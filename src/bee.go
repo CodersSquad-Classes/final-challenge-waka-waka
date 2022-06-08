@@ -4,7 +4,35 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"sync"
+	"time"
 )
+
+type Sprite struct { // A sprite is a position on the board.
+	Row      int
+	Col      int
+	StartRow int
+	StartCol int
+}
+
+func MovePlayer(dir string, player *Sprite, maze *[]string, numDots, score *int, pillMx *sync.Mutex, ghostsStatusMx *sync.RWMutex, ghosts *[]*Ghost, pillTimer *time.Timer, cfg *Config) {
+	player.Row, player.Col = MakeMove(player.Row, player.Col, dir, maze)
+
+	removeDot := func(row, col int) {
+		(*maze)[row] = (*maze)[row][0:col] + " " + (*maze)[row][col+1:]
+	}
+
+	switch (*maze)[player.Row][player.Col] {
+	case '.':
+		*numDots--
+		*score++
+		removeDot(player.Row, player.Col)
+	case 'X':
+		*score += 10
+		removeDot(player.Row, player.Col)
+		go ProcessPill(pillMx, ghostsStatusMx, ghosts, pillTimer, cfg)
+	}
+}
 
 func ReadInput() (string, error) {
 	buffer := make([]byte, 100)
