@@ -11,19 +11,19 @@ import (
 type Config struct {
 	Player           string        `json:"player"`
 	MaxLifestate     int           `json:"maxLifestate"`
-	Ghost            string        `json:"ghost"`
-	GhostBlue        string        `json:"ghost_blue"`
+	Enemy            string        `json:"enemy"`
+	AntiEnemy        string        `json:"anti_enemy"`
 	Wall             string        `json:"wall"`
 	Dot              string        `json:"dot"`
 	Pill             string        `json:"pill"`
 	Death            string        `json:"death"`
 	Space            string        `json:"space"`
 	UseEmoji         bool          `json:"use_emoji"`
-	PillDurationSecs time.Duration `json:"pill_duration_secs"`
+	PillDurationSecs time.Duration `json:"pill_duration"`
 }
 
-func LoadResources(mazefile, configFile string, maze *[]string, ghosts *[]*Ghost, player *Sprite, numDots *int, cfg *Config, ghostNum int) error {
-	err := LoadMaze(mazefile, maze, ghosts, player, numDots, ghostNum)
+func LoadResources(mazefile, configFile string, maze *[]string, enemies *[]*Enemy, player *Sprite, numDots *int, cfg *Config, enemyNum int) error {
+	err := LoadMaze(mazefile, maze, enemies, player, numDots, enemyNum)
 	if err != nil {
 		log.Println("failed to load maze:", err)
 		return err
@@ -38,7 +38,7 @@ func LoadResources(mazefile, configFile string, maze *[]string, ghosts *[]*Ghost
 	return nil
 }
 
-func LoadMaze(file string, maze *[]string, ghosts *[]*Ghost, player *Sprite, numDots *int, ghostsNum int) error {
+func LoadMaze(file string, maze *[]string, enemies *[]*Enemy, player *Sprite, numDots *int, enemiesNum int) error {
 	f, err := os.Open(file) // open file
 	if err != nil {
 		return err
@@ -57,8 +57,8 @@ func LoadMaze(file string, maze *[]string, ghosts *[]*Ghost, player *Sprite, num
 			case 'P':
 				*player = Sprite{Row: row, Col: col, StartRow: row, StartCol: col}
 			case 'G':
-				if len(*ghosts) < ghostsNum {
-					*ghosts = append(*ghosts, &Ghost{Position: Sprite{Row: row, Col: col, StartRow: row, StartCol: col}, Status: GhostStatusNormal})
+				if len(*enemies) < enemiesNum {
+					*enemies = append(*enemies, &Enemy{Position: Sprite{Row: row, Col: col, StartRow: row, StartCol: col}, Status: EnemyStatusNormal})
 				}
 			case '.':
 				*numDots++

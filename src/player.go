@@ -15,7 +15,7 @@ type Sprite struct { // A sprite is a position on the board.
 	StartCol int
 }
 
-func MovePlayer(dir string, player *Sprite, maze *[]string, numDots, score *int, pillMx *sync.Mutex, ghostsStatusMx *sync.RWMutex, ghosts *[]*Ghost, pillTimer *time.Timer, cfg *Config) {
+func MovePlayer(dir string, player *Sprite, maze *[]string, numDots, score *int, pillMx *sync.Mutex, enemiesStatusMx *sync.RWMutex, enemies *[]*Enemy, pillTimer *time.Timer, cfg *Config) {
 	player.Row, player.Col = MakeMove(player.Row, player.Col, dir, maze)
 
 	removeDot := func(row, col int) {
@@ -30,7 +30,7 @@ func MovePlayer(dir string, player *Sprite, maze *[]string, numDots, score *int,
 	case 'X':
 		*score += 10
 		removeDot(player.Row, player.Col)
-		go ProcessPill(pillMx, ghostsStatusMx, ghosts, pillTimer, cfg)
+		go ProcessPill(pillMx, enemiesStatusMx, enemies, pillTimer, cfg)
 	}
 }
 
