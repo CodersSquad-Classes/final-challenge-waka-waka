@@ -55,10 +55,6 @@ Build the application
   make build
 ```
 
-Install dependencies
-```
- make deps
-```
 Clean previous build
 ```
  make clean
