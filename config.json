@@ -6,7 +6,7 @@
     "wall": "🌱",
     "dot": "🌸",
     "pill": "🍯",
-    "pill_duration": 5,
+    "pill_duration": 10,
     "death": "💀",
     "space": "  ",
     "use_emoji": true
