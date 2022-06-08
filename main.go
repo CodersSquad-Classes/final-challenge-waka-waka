@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	pacman "PacmanGo/pacman"
+	pacman "PacmanGo/src"
 )
 
 func main() {
