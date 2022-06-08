@@ -28,10 +28,10 @@ Final Project of the course "Advanced Programming"
 
 ## Build and Run
 
-Build and run the application
+Build the application
 
 ```
-  make run enemies < 1 -12 >
+  make build
 ```
 
 Test the application
@@ -40,18 +40,14 @@ Test the application
   make test
 ```
 
-Build the application
-
-```
-  make build
-```
-
 Clean previous build
+
 ```
  make clean
 ```
 
 ## Diagrams
+
 <div align="center">
 <h3 align="center">Activity Diagram</h3>
 <a href="https://github.com/othneildrew/Best-README-Template">
@@ -64,6 +60,7 @@ Clean previous build
 </div>
 
 ## Usage
+
 The keys are: UpArrow, DownArrow, LeftArrow and RightArrow
 
 Run the game with the command:
@@ -77,6 +74,7 @@ If you want to end the game press the esc key.
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
+
 [contributors-shield]: https://img.shields.io/github/contributors/othneildrew/Best-README-Template.svg?style=for-the-badge
 [contributors-url]: https://github.com/othneildrew/Best-README-Template/graphs/contributors
 [forks-shield]: https://img.shields.io/github/forks/othneildrew/Best-README-Template.svg?style=for-the-badge
@@ -90,4 +88,7 @@ If you want to end the game press the esc key.
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
 [linkedin-url]: https://linkedin.com/in/othneildrew
 [product-screenshot]: images/screenshot.png
+
+```
+
 ```
