@@ -5,9 +5,9 @@ import (
 	"time"
 )
 
-func ProcessPill(pillMx *sync.Mutex, ghostsStatusMx *sync.RWMutex, ghosts *[]*Ghost, pillTimer *time.Timer, cfg *Config) {
+func ProcessPill(pillMx *sync.Mutex, enemiesStatusMx *sync.RWMutex, enemies *[]*Enemy, pillTimer *time.Timer, cfg *Config) {
 	pillMx.Lock()
-	go UpdateGhosts(ghosts, GhostStatusBlue, ghostsStatusMx)
+	go UpdateEnemies(enemies, EnemyStatusBlue, enemiesStatusMx)
 	if pillTimer != nil {
 		pillTimer.Stop()
 	}
@@ -16,7 +16,6 @@ func ProcessPill(pillMx *sync.Mutex, ghostsStatusMx *sync.RWMutex, ghosts *[]*Gh
 	<-pillTimer.C
 	pillMx.Lock()
 	pillTimer.Stop()
-	go UpdateGhosts(ghosts, GhostStatusNormal, ghostsStatusMx)
+	go UpdateEnemies(enemies, EnemyStatusNormal, enemiesStatusMx)
 	pillMx.Unlock()
-
 }

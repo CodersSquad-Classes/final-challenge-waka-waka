@@ -1,11 +1,12 @@
 {
     "player": "🐝",
-    "maxLifestate" : 3,
-    "ghost": "🏸",
-    "ghost_blue": "🐛",
+    "maxLifestate": 5,
+    "enemy": "🏸",
+    "anti_enemy": "🐛",
     "wall": "🌱",
     "dot": "🌸",
     "pill": "🍯",
+    "pill_duration": 5,
     "death": "💀",
     "space": "  ",
     "use_emoji": true

@@ -9,7 +9,7 @@ import (
 	"github.com/danicat/simpleansi"
 )
 
-func PrintScreen(cfg *Config, maze *[]string, player *Sprite, ghosts *[]*Ghost, numDots, score, lives *int, pillMx *sync.Mutex, ghostsStatusMx *sync.RWMutex) {
+func PrintScreen(cfg *Config, maze *[]string, player *Sprite, enemies *[]*Enemy, numDots, score, lives *int, pillMx *sync.Mutex, enemiesStatusMx *sync.RWMutex) {
 	simpleansi.ClearScreen()
 	for _, line := range *maze {
 		for _, chr := range line {
@@ -30,16 +30,16 @@ func PrintScreen(cfg *Config, maze *[]string, player *Sprite, ghosts *[]*Ghost, 
 	MoveCursor(player.Row, player.Col, cfg)
 	fmt.Print(cfg.Player)
 
-	ghostsStatusMx.RLock()
-	for _, g := range *ghosts {
+	enemiesStatusMx.RLock()
+	for _, g := range *enemies {
 		MoveCursor(g.Position.Row, g.Position.Col, cfg)
-		if g.Status == GhostStatusNormal {
-			fmt.Printf(cfg.Ghost)
-		} else if g.Status == GhostStatusBlue {
-			fmt.Printf(cfg.GhostBlue)
+		if g.Status == EnemyStatusNormal {
+			fmt.Printf(cfg.Enemy)
+		} else if g.Status == EnemyStatusBlue {
+			fmt.Printf(cfg.AntiEnemy)
 		}
 	}
-	ghostsStatusMx.RUnlock()
+	enemiesStatusMx.RUnlock()
 
 	MoveCursor(len(*maze)+1, 0, cfg)
 
