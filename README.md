@@ -69,9 +69,7 @@ Run the game with the command:
 go run main.go < 1 - 12 >
 
 ```
-
-If you want to end the game press the esc key.
-
+If you want to end the game press the `esc` key.
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
 
@@ -89,6 +87,3 @@ If you want to end the game press the esc key.
 [linkedin-url]: https://linkedin.com/in/othneildrew
 [product-screenshot]: images/screenshot.png
 
-```
-
-```
